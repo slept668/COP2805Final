@@ -16,6 +16,7 @@ import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
@@ -26,7 +27,6 @@ public class MainWindow extends JFrame{
 	public JButton fileChooser;
 	public JButton run;
 	public JFileChooser mainFileChooser;
-	
 	
 	public MainWindow() {
 		super();
@@ -72,6 +72,7 @@ public class MainWindow extends JFrame{
 
 class RunListener implements ActionListener{
 	MainWindow fr;
+	String preTAString = null;
 	
 	public RunListener(MainWindow frame) {
 		fr = frame;
@@ -79,7 +80,10 @@ class RunListener implements ActionListener{
 
 	public void actionPerformed(ActionEvent eventData) {
 		try {
-			String fullString;
+			preTAString = fr.preEncryptTA.getText();
+			if (preTAString.isEmpty()) {
+				JOptionPane.showMessageDialog(null, "NO DATA TO TRANSMIT", "WARNING", JOptionPane.WARNING_MESSAGE);
+			}
 		}
 		catch (Exception e) {
 			e.printStackTrace();
