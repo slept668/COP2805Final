@@ -63,7 +63,7 @@ public class MainWindow extends JFrame{
 		fileChooser = new JButton("Choose File");
 		fileChooser.addActionListener(new FileExplorer(this));
 		this.add(fileChooser);
-		run = new JButton("Encrypt");
+		run = new JButton("Decrypt");
 		run.addActionListener(new RunListener(this));
 		this.add(run);
 		
