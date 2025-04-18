@@ -6,7 +6,14 @@ import java.awt.GridLayout;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.net.Socket;
+import java.net.UnknownHostException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -22,8 +29,8 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 
 public class MainWindow extends JFrame{
-	public JTextArea preEncryptTA;
-	public JTextArea postEncryptTA;
+	public JTextArea preDecryptTA;
+	public JTextArea postDecryptTA;
 	public JButton fileChooser;
 	public JButton run;
 	public JFileChooser mainFileChooser;
@@ -39,19 +46,19 @@ public class MainWindow extends JFrame{
 		this.setTitle("Super Secret Message Encrypter");
 		this.setLayout(new GridLayout(3, 3));
 		
-		this.add(new JLabel("Message To Encrypt"));
-		preEncryptTA = new JTextArea();
-		JScrollPane preScrollPane = new JScrollPane(preEncryptTA);
+		this.add(new JLabel("Encrypted Message"));
+		preDecryptTA = new JTextArea();
+		JScrollPane preScrollPane = new JScrollPane(preDecryptTA);
 		this.add(preScrollPane);
-		preEncryptTA.setEditable(false);
-		preEncryptTA.setLineWrap(true);
+		preDecryptTA.setEditable(false);
+		preDecryptTA.setLineWrap(true);
 		
-		this.add(new JLabel("Encrpyted Message"));
-		postEncryptTA = new JTextArea();
-		JScrollPane postScrollPane = new JScrollPane(postEncryptTA);
+		this.add(new JLabel("Decrpyted Message"));
+		postDecryptTA = new JTextArea();
+		JScrollPane postScrollPane = new JScrollPane(postDecryptTA);
 		this.add(postScrollPane);
-		postEncryptTA.setEditable(false);
-		postEncryptTA.setLineWrap(true);
+		postDecryptTA.setEditable(false);
+		postDecryptTA.setLineWrap(true);
 		
 		fileChooser = new JButton("Choose File");
 		fileChooser.addActionListener(new FileExplorer(this));
@@ -60,10 +67,9 @@ public class MainWindow extends JFrame{
 		run.addActionListener(new RunListener(this));
 		this.add(run);
 		
-		int frameWidth = 450;
-		int frameHeight = 250;
-		Dimension screenSize =
-		Toolkit.getDefaultToolkit().getScreenSize();
+		int frameWidth = 900;
+		int frameHeight = 500;
+		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
 		this.setBounds((int) screenSize.getWidth()/2 - (int) frameWidth/2, (int) screenSize.getHeight()/2 - (int) frameHeight/2,
 		frameWidth, frameHeight);
 		this.setVisible(true);
@@ -80,9 +86,35 @@ class RunListener implements ActionListener{
 
 	public void actionPerformed(ActionEvent eventData) {
 		try {
-			preTAString = fr.preEncryptTA.getText();
+			preTAString = fr.preDecryptTA.getText();
 			if (preTAString.isEmpty()) {
 				JOptionPane.showMessageDialog(null, "NO DATA TO TRANSMIT", "WARNING", JOptionPane.WARNING_MESSAGE);
+			}
+			else {
+				try {
+					Socket socket = new Socket("127.0.0.1", 668);
+					
+					PrintWriter writer = new PrintWriter(new OutputStreamWriter(socket.getOutputStream()));
+					writer.println(preTAString);
+					writer.flush();
+					
+					BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+					
+					String serverResponse = reader.readLine();
+					
+					fr.postDecryptTA.setText(serverResponse);
+					
+					System.out.println(serverResponse);
+					
+					socket.close();
+					
+				} catch (UnknownHostException e) {
+					JOptionPane.showMessageDialog(null, "CANNOT CONNECT TO HQ. TAKE THE MOLAR PILL.", "WARNING", JOptionPane.WARNING_MESSAGE);
+					e.printStackTrace();
+				} catch (IOException e) {
+					JOptionPane.showMessageDialog(null, "CANNOT CONNECT TO HQ. TAKE THE MOLAR PILL.", "WARNING", JOptionPane.WARNING_MESSAGE);
+					e.printStackTrace();
+				}
 			}
 		}
 		catch (Exception e) {
@@ -118,7 +150,7 @@ class FileExplorer implements ActionListener{
 			catch (Exception e) {
 				e.printStackTrace();
 			}
-			fr.preEncryptTA.setText(fullString);
+			fr.preDecryptTA.setText(fullString);
 			System.out.println(selectedFile.getName());
 			}
 		}
